@@ -3,4 +3,4 @@
  * @author Mike Adamczyk <mike@bom.us>
  */
 
-exports.Provider = require('./src/providers/APIProvider');
+module.exports = require('./src/providers/APIModule');
