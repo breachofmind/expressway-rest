@@ -8,13 +8,20 @@ class APIModule extends Expressway.Module
     {
         super(app);
 
-        this.requires = [
-            'AppModule'
-        ];
+        this.requires(
+            'AppModule',
+            'AuthModule',
+            'ModelProvider'
+        );
 
         this.baseUri = "/api/v1";
     }
 
+    /**
+     * Register controllers, middlewares and other services.
+     * @param app Application
+     * @param controllerService ControllerService
+     */
     register(app,controllerService)
     {
         this.parent('AppModule', this.baseUri);
@@ -23,17 +30,24 @@ class APIModule extends Expressway.Module
         controllerService.addDirectory(__dirname+'/../controllers/');
     }
 
+    /**
+     * Create routes to the API.
+     * @param app
+     */
     boot(app)
     {
         // Assign global middleware.
         this.add([
             'BodyParser',
             'Session',
+            'Localization',
             'BasicAuth'
         ]);
+
         // Assign routes.
         this.add({
             "GET    /"              : 'RESTController.index',
+            "GET    /locale"        : 'RESTController.locale',
             "GET    /:model"        : 'RESTController.fetchAll',
             "POST   /:model"        : 'RESTController.create',
             "POST   /:model/search" : 'RESTController.search',

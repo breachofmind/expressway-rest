@@ -3,6 +3,7 @@
 var _           = require('lodash');
 var Expressway  = require('expressway');
 var utils       = Expressway.utils;
+var app         = Expressway.app;
 
 class RESTController extends Expressway.Controller
 {
@@ -46,6 +47,23 @@ class RESTController extends Expressway.Controller
         return json;
     }
 
+    /**
+     * Fetch the localization keys.
+     *
+     * GET /api/v1/locale
+     */
+    locale(request,response,next,localeService,config)
+    {
+        if (app.config.cache) {
+            response.setHeader('Cache-Control', 'public, max-age=' + config('cache_max_age', 7*24*60*60));
+        }
+        let locale = request.locale.toLowerCase();
+
+        return {
+            locale: locale,
+            keys: localeService.getLocale(locale)
+        };
+    }
 
     /**
      * Fetches an object by ID.
