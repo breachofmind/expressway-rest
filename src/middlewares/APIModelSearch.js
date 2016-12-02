@@ -11,6 +11,13 @@ var config = app.get('config');
  */
 class APIModelSearch extends Expressway.Middleware
 {
+    get type() {
+        return "APIModule"
+    }
+    get description() {
+        return "Manipulates a user's search results based on the type of user"
+    }
+
     method(request,response,next)
     {
         let search = request.body;

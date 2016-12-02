@@ -7,6 +7,10 @@ var app         = Expressway.app;
 
 class RESTController extends Expressway.Controller
 {
+    get description() {
+        return "Handles all API requests"
+    }
+
     constructor(app)
     {
         super(app);
@@ -28,10 +32,10 @@ class RESTController extends Expressway.Controller
      *
      * GET /api/v1/
      */
-    index(request,response,next,modelService,url,app,config)
+    index(request,response,next,modelService,url,app,config,APIModule)
     {
         var json = {
-            message: "Expressway API v1",
+            message: APIModule.apiName,
             currentUser: request.user,
             index: {}
         };

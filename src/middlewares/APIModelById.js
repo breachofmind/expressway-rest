@@ -5,6 +5,13 @@ var utils = Expressway.utils;
 
 class APIModelById extends Expressway.Middleware
 {
+    get type() {
+        return "APIModule"
+    }
+    get description() {
+        return "If an ID and model is given, looks up the model in the database"
+    }
+
     method(request,response,next)
     {
         let id    = request.params.id;

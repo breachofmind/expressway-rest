@@ -4,6 +4,8 @@ var Expressway = require('expressway');
 
 class APIModule extends Expressway.Module
 {
+    get alias() { return "$api" }
+
     constructor(app)
     {
         super(app);
@@ -14,6 +16,7 @@ class APIModule extends Expressway.Module
             'ModelProvider'
         );
 
+        this.apiName = "Expressway API v1";
         this.baseUri = "/api/v1";
     }
 
@@ -24,7 +27,7 @@ class APIModule extends Expressway.Module
      */
     register(app,controllerService)
     {
-        this.parent('AppModule', this.baseUri);
+        this.parent('AppModule');
 
         controllerService.addDirectory(__dirname+'/../middlewares/');
         controllerService.addDirectory(__dirname+'/../controllers/');
@@ -32,10 +35,19 @@ class APIModule extends Expressway.Module
 
     /**
      * Create routes to the API.
-     * @param app
+     * @param app Application
+     * @param modelService ModelService
+     * @param url UrlService
      */
-    boot(app)
+    boot(app,modelService,url)
     {
+        // For each model's JSON output, append an API url.
+        modelService.each(model => {
+            model.appends.push((object,model) => {
+                return ["$url", url(`${this.baseUri}/${model.slug}/${object.id}`)];
+            })
+        });
+
         // Assign global middleware.
         this.add([
             'BodyParser',
@@ -56,7 +68,9 @@ class APIModule extends Expressway.Module
             "DELETE /:model/:id"    : 'RESTController.trash',
         });
 
-        this.add('NotFound');
+        this.add(function APINotFound(request,response,next) {
+            return response.sendStatus(404);
+        });
     }
 }
 

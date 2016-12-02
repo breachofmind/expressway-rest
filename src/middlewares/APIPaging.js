@@ -7,6 +7,13 @@ var config = app.get('config');
 
 class APIPaging extends Expressway.Middleware
 {
+    get type() {
+        return "APIModule"
+    }
+    get description() {
+        return "For a model search, creates range-based pagination helpers"
+    }
+
     method(request,response,next)
     {
         let model = request.params.model;
