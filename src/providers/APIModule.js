@@ -16,6 +16,8 @@ class APIModule extends Expressway.Module
             'ModelProvider'
         );
 
+        this.package = require('../../package.json');
+
         this.apiName = "Expressway API v1";
         this.baseUri = "/api/v1";
     }
@@ -50,6 +52,7 @@ class APIModule extends Expressway.Module
 
         // Assign global middleware.
         this.add([
+            'APIRequest',
             'BodyParser',
             'Session',
             'Localization',
