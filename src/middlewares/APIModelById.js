@@ -15,7 +15,7 @@ class APIModelById extends Middleware
 
         model.findById(id).exec().then(result => {
             if (! result) {
-                return response.api({error:`Model ${model.name}/${id} doesn't exist.`}, 404);
+                return response.api({message:`Model does not exist`, slug:model.slug, id:id }, 404);
             }
             request.params.object = result;
             next();

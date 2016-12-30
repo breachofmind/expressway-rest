@@ -21,12 +21,7 @@ class APIExtension extends Extension
 
         app.use([
             require('expressway/src/providers/ModelProvider'),
-            require('./middlewares/APIAuth'),
-            require('./middlewares/APIModelById'),
-            require('./middlewares/APIModelRequest'),
-            require('./middlewares/APIModelSearch'),
-            require('./middlewares/APIPaging'),
-            require('./middlewares/APIRequest'),
+            require('./middlewares'),
             require('./controllers/RESTController'),
             require('expressway-auth'),
         ]);
@@ -55,25 +50,25 @@ class APIExtension extends Extension
                 "PUT    /:model/:id"    : 'RESTController.update',
                 "DELETE /:model/:id"    : 'RESTController.trash',
             },
-            function APINotFound(request,response,next) {
-                return response.sendStatus(404);
-            }
+            'APINotFound'
         ];
     }
 
     /**
      * When all classes are constructed.
-     * @param app
-     * @param url
+     * @injectable
+     * @param app Application
+     * @param url URLService
      */
     boot(app,url)
     {
         app.alias('api', this.base);
 
         // Add a helper method for the URL service.
-        url.api = function(uri="") {
-            return this.get([app.alias('api'),uri]);
-        }
+        url.extend({
+            api(uri) {return this.get([app.alias('api')].concat(uri)) }
+        });
+
 
         // For each model's JSON output, append an API url.
         app.models.each(blueprint => {

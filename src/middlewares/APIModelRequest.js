@@ -10,11 +10,13 @@ class APIModelRequest extends Middleware
 
     method(request,response,next,app,extension)
     {
+        let model;
         let value = request.params.model;
-        let model = app.models.slug(value);
 
-        if (! model) {
-            return response.api({message:`Model does not exist`}, 404);
+        try {
+            model = app.models.slug(value);
+        } catch (err) {
+            return response.api({message:"Model does not exist", slug:value}, 404);
         }
 
         if (extension.auth && model.expose === false && ! request.user) {
