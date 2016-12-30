@@ -1,18 +1,14 @@
 "use strict";
 
-var Expressway = require('expressway');
-var utils = Expressway.utils;
+var Middleware = require('expressway').Middleware;
 
-class APIModelById extends Expressway.Middleware
+class APIModelById extends Middleware
 {
-    get type() {
-        return "APIModule"
-    }
     get description() {
         return "If an ID and model is given, looks up the model in the database"
     }
 
-    method(request,response,next)
+    method(request,response,next,utils)
     {
         let id    = request.params.id;
         let model = request.params.model;

@@ -1,20 +1,14 @@
 "use strict";
 
-var Expressway = require('expressway');
-var app = Expressway.instance.app;
-var utils = Expressway.utils;
-var config = app.get('config');
+var Middleware = require('expressway').Middleware;
 
-class APIPaging extends Expressway.Middleware
+class APIPaging extends Middleware
 {
-    get type() {
-        return "APIModule"
-    }
     get description() {
         return "For a model search, creates range-based pagination helpers"
     }
 
-    method(request,response,next)
+    method(request,response,next,config,utils)
     {
         let model = request.params.model;
 

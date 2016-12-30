@@ -1,11 +1,8 @@
 "use strict";
 
-var _           = require('lodash');
-var Expressway  = require('expressway');
-var utils       = Expressway.utils;
-var app         = Expressway.app;
+var Controller  = require('expressway').Controller;
 
-class RESTController extends Expressway.Controller
+class RESTController extends Controller
 {
     get description() {
         return "Handles all API requests"
@@ -32,21 +29,23 @@ class RESTController extends Expressway.Controller
      *
      * GET /api/v1/
      */
-    index(request,response,next,modelService,url,app,config,APIModule)
+    index(request,response,next,url,app,config,api,currentUser,extension)
     {
         var json = {
-            message: APIModule.apiName,
-            currentUser: request.user,
+            message: api.apiName,
+            currentUser: currentUser,
             index: {}
         };
 
-        modelService.each(model => {
-            if ((model.expose == false && request.user) || model.expose == true) {
-                json.index[model.name] = url(config('api_baseuri')+'/'+model.slug);
+        app.models.each((model) => {
+            if (extension.auth === false
+                || (extension.auth && model.expose == false && currentUser)
+                || model.expose == true) {
+                json.index[model.name] = url.api(model.slug);
             }
         });
 
-        app.emit('rest.index', json.index);
+        app.emit('api.index', json.index);
 
         return json;
     }
@@ -56,16 +55,16 @@ class RESTController extends Expressway.Controller
      *
      * GET /api/v1/locale
      */
-    locale(request,response,next,localeService,config)
+    locale(request,response,next,locale,config)
     {
         if (app.config.cache) {
             response.setHeader('Cache-Control', 'public, max-age=' + config('cache_max_age', 7*24*60*60));
         }
-        let locale = request.locale.toLowerCase();
+        let loc = request.locale.toLowerCase();
 
         return {
-            locale: locale,
-            keys: localeService.getLocale(locale)
+            locale: loc,
+            keys: locale.getLocale(loc)
         };
     }
 
@@ -117,13 +116,13 @@ class RESTController extends Expressway.Controller
             }, function(err) {
 
                 // model.find() error
-                return response.apiError(err);
+                return response.api(err,400);
             });
 
         }, function(err) {
 
             // model.count() error
-            return response.apiError(err);
+            return response.api(err,400);
         });
     }
 
@@ -141,7 +140,7 @@ class RESTController extends Expressway.Controller
 
         }, function(err) {
 
-            return response.apiError(err);
+            return response.api(err,400);
         });
     }
 
@@ -170,7 +169,7 @@ class RESTController extends Expressway.Controller
 
             }, function(err){
 
-                return response.apiError(err);
+                return response.api(err,400);
             });
     }
 
@@ -188,7 +187,7 @@ class RESTController extends Expressway.Controller
 
         }, function(err) {
 
-            return response.apiError(err);
+            return response.api(err,400);
 
         });
     }
@@ -212,7 +211,7 @@ class RESTController extends Expressway.Controller
 
         }, function(err) {
 
-            return response.apiError(err);
+            return response.api(err,400);
 
         });
     }

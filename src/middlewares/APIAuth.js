@@ -1,20 +1,17 @@
 "use strict";
 
-var Expressway = require('expressway');
+var Middleware = require('expressway').Middleware;
 
-class APIAuth extends Expressway.Middleware
+class APIAuth extends Middleware
 {
-    get type() {
-        return "APIModule"
-    }
     get description() {
         return "Checks if the user is logged in"
     }
 
-    method(request,response,next)
+    method(request,response,next,extension)
     {
-        if (! request.user) {
-            return response.api({error:`You are not authorized to perform this operation`}, 401);
+        if (extension.auth && ! request.user) {
+            return response.api({message:`You are not authorized to perform this operation`}, 401);
         }
         return next();
     }

@@ -1,6 +1,3 @@
-/**
- * Adds a REST API to your Expressway app.
- * @author Mike Adamczyk <mike@bom.us>
- */
+"use strict";
 
-module.exports = require('./src/providers/APIModule');
+module.exports = require('./src/APIExtension');

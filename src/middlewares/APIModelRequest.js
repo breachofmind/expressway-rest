@@ -1,27 +1,24 @@
 "use strict";
 
-var Expressway = require('expressway');
+var Middleware = require('expressway').Middleware;
 
-class APIModelRequest extends Expressway.Middleware
+class APIModelRequest extends Middleware
 {
-    get type() {
-        return "APIModule"
-    }
     get description() {
         return "If a model slug is given, checks if it exists in the model service"
     }
 
-    method(request,response,next,modelService)
+    method(request,response,next,app,extension)
     {
-        var value = request.params.model;
-        var model = modelService.bySlug(value);
+        let value = request.params.model;
+        let model = app.models.slug(value);
 
         if (! model) {
-            return response.api({error:`Model does not exist`}, 404);
+            return response.api({message:`Model does not exist`}, 404);
         }
 
-        if (model.expose == false && ! request.user) {
-            return response.api({error:`Unauthorized`}, 401);
+        if (extension.auth && model.expose === false && ! request.user) {
+            return response.api({message:`Unauthorized`}, 401);
         }
 
         request.params.model = model;

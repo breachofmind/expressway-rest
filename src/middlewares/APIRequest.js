@@ -1,15 +1,11 @@
 "use strict";
 
-var Expressway = require('expressway');
-var app = Expressway.app;
+var Middleware = require('expressway').Middleware;
 
 const JSONAPI_MIME = "application/vnd.api+json";
 
-class APIRequest extends Expressway.Middleware
+class APIRequest extends Middleware
 {
-    get type() {
-        return "APIModule"
-    }
     get description() {
         return "Instructs the server to respond with json and cache requests if necessary"
     }
@@ -21,7 +17,7 @@ class APIRequest extends Expressway.Middleware
     {
         if (! request.accepts(JSONAPI_MIME)) {
             return 415; // Unsupported media type
-        } else if (request.accepts("*/*") && app.env == ENV_PROD) {
+        } else if (request.accepts("*/*") && this.app.env == ENV_PROD) {
             return 406; // Not Acceptable, only if requesting in production.
         }
         response.set('Content-Type', JSONAPI_MIME);
