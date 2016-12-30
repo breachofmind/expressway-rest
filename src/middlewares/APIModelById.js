@@ -21,7 +21,7 @@ class APIModelById extends Middleware
             next();
 
         }, err => {
-            response.apiError(err);
+            response.api(err,400);
         });
     }
 }

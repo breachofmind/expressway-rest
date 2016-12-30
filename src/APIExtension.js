@@ -20,6 +20,7 @@ class APIExtension extends Extension
         this.apiName = "Expressway API v1";
 
         app.use([
+            require('expressway/src/providers/ModelProvider'),
             require('./middlewares/APIAuth'),
             require('./middlewares/APIModelById'),
             require('./middlewares/APIModelRequest'),
