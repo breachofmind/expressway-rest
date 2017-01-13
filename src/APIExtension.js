@@ -8,22 +8,20 @@ var Extension = require('expressway').Extension;
  */
 class APIExtension extends Extension
 {
-    constructor(app)
+    constructor(app,config)
     {
         super(app);
 
-        this.alias = "api";
-        this.auth = false;
-
+        this.auth    = config('auth', false);
         this.package = require('../package.json');
-        this.base = "/api/v1";
-        this.apiName = "Expressway API v1";
+        this.base    = "/api/v1";
+        this.title = "Expressway API v1";
 
         app.use([
             require('expressway/src/providers/ModelProvider'),
+            require('expressway-auth'),
             require('./middlewares'),
             require('./controllers/RESTController'),
-            require('expressway-auth'),
         ]);
 
         this.middleware = [
@@ -55,29 +53,33 @@ class APIExtension extends Extension
     }
 
     /**
+     * When service is created, this will also be created as a service.
+     * @returns {string}
+     */
+    get alias() { return "api" }
+
+    /**
      * When all classes are constructed.
      * @injectable
+     * @param next Function
      * @param app Application
      * @param url URLService
      */
-    boot(app,url)
+    boot(next,app,url)
     {
         app.alias('api', this.base);
 
         // Add a helper method for the URL service.
         url.extend({
-            api(uri) {return this.get([app.alias('api')].concat(uri)) }
+            api(uri) { return this.get([app.alias('api')].concat(uri)) }
         });
 
-
-        // For each model's JSON output, append an API url.
-        app.models.each(blueprint => {
-            blueprint.appends.push((object,model) => {
-                return ["$url", url.api(`${model.slug}/${object.id}`)];
-            });
+        // Attach the object API url to the json response.
+        app.on('model.toJSON', (json,model,object) => {
+            json.$url = url.api(`${model.slug}/${object.id}`);
         });
 
-        super.boot(app);
+        super.boot(next);
     }
 }
 

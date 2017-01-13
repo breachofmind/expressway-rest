@@ -4,13 +4,16 @@ var Controller  = require('expressway').Controller;
 
 class RESTController extends Controller
 {
-    get description() {
-        return "Handles all API requests"
-    }
-
+    /**
+     * Constructor.
+     * @injectable
+     * @param app Application
+     */
     constructor(app)
     {
         super(app);
+
+        this.description = "Handles all API requests";
 
         this.middleware({
             update:    ['APIAuth', 'APIModelRequest', 'APIModelById'],
@@ -22,30 +25,29 @@ class RESTController extends Controller
         });
     }
 
-
     /**
      * Say Hello.
      * Provide an index of API objects.
      *
      * GET /api/v1/
      */
-    index(request,response,next,url,app,config,api,currentUser,extension)
+    index(request,response,next,url,app,api,currentUser)
     {
         var json = {
-            message: api.apiName,
+            message: api.title,
             currentUser: currentUser,
             index: {}
         };
 
         app.models.each((model) => {
-            if (extension.auth === false
-                || (extension.auth && model.expose == false && currentUser)
+            if (api.auth === false
+                || (api.auth && model.expose == false && currentUser && currentUser.can([model.name,'read']))
                 || model.expose == true) {
                 json.index[model.name] = url.api(model.slug);
             }
         });
 
-        app.emit('api.index', json.index);
+        app.emit('api.index', json);
 
         return json;
     }
@@ -73,7 +75,7 @@ class RESTController extends Controller
      *
      * GET /api/v1/{model}/{id}
      */
-    fetchOne(request,response,next)
+    fetchOne(request,response,next,Media)
     {
         return response.api(request.params.object, 200, {
             model: request.params.model.name
@@ -97,10 +99,10 @@ class RESTController extends Controller
             paging.total = count;
 
             var promise = model
-                .find       (paging.filter)
-                .sort       (paging.sort)
-                .limit      (paging.limit)
-                .populate   (model.populate)
+                .find(paging.filter)
+                .sort(paging.sort)
+                .limit(paging.limit)
+                .populate(model.populate)
                 .exec();
 
             // After finding the count, find the records.
@@ -150,10 +152,17 @@ class RESTController extends Controller
      *
      * PUT /api/{model}/{id}
      */
-    update(request,response)
+    update(request,response,next,currentUser)
     {
         let object = request.params.object;
         let model = request.params.model;
+
+        // I need to have permission to update this thing.
+        let test = currentUser.allowed([model.name,'update'], object);
+
+        if (test.failed) {
+            return response.api({message:test.localize(request)}, 403);
+        }
 
         if (request.body._id) delete request.body._id; // Mongoose has problems with this.
 
@@ -179,9 +188,18 @@ class RESTController extends Controller
      *
      * POST /api/{model}
      */
-    create(request,response)
+    create(request,response,next,currentUser)
     {
-        return request.params.model.create(request.body).then(function(data)
+        let model = request.params.model;
+
+        // I need to have permission to create this thing.
+        let test = currentUser.allowed([model.name,'create']);
+
+        if (test.failed) {
+            return response.api({message:test.localize(request)}, 403);
+        }
+
+        return model.create(request.body).then(function(data)
         {
             return response.api(data,200);
 
@@ -197,15 +215,22 @@ class RESTController extends Controller
      *
      * DELETE /api/{model}/{id}
      */
-    trash(request,response)
+    trash(request,response,next,currentUser)
     {
         let object = request.params.object;
         let model = request.params.model;
 
-        return model.remove({_id: object.id}).then(function(results) {
-            var data = {
+        // I need to have permission to delete this thing.
+        let test = currentUser.allowed([model.name,'delete'], object);
+
+        if (test.failed) {
+            return response.api({message:test.localize(request)}, 403);
+        }
+
+        return model.delete({[model.primaryKey]: object[model.primaryKey]}).then(function(results) {
+            let data = {
                 results: results,
-                objectId : object.id
+                objectId : object[model.primaryKey]
             };
             return response.api(data,200);
 

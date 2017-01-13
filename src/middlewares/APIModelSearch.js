@@ -15,19 +15,26 @@ class APIModelSearch extends Middleware
 
     method(request,response,next,config,currentUser,extension)
     {
-        let search = request.body;
         let model = request.params.model;
 
-        request.params.query = model
-            .find(search.where)
-            .sort(search.sort)
-            .limit(search.limit || config('limit',50))
-            .populate(search.populate || model.populate);
+        if (! request.body.where) request.body.where = {};
+        if (! request.body.sort) request.body.sort = model.range;
+        if (! request.body.populate) request.body.populate = model.populate;
+        if (! request.body.limit) request.body.limit = config('limit',50);
+
+        let search = request.body;
 
         // Based on permissions, only show models the user owns.
-        if(extension.auth && currentUser.cannot(model,'manage')) {
-            request.params.query.where(model.managed).equals(currentUser.id);
+        if(extension.auth && model.managed && currentUser.cannot([model.name,"manage"])) {
+            search.where[model.managed] = currentUser.id;
         }
+        let query = model
+            .find(search.where)
+            .sort(search.sort)
+            .limit(search.limit)
+            .populate(search.populate);
+
+        request.params.query = query;
 
         next();
     }

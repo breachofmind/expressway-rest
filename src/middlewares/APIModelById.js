@@ -13,7 +13,7 @@ class APIModelById extends Middleware
         let id    = request.params.id;
         let model = request.params.model;
 
-        model.findById(id).exec().then(result => {
+        model.findById(id).then(result => {
             if (! result) {
                 return response.api({message:`Model does not exist`, slug:model.slug, id:id }, 404);
             }
