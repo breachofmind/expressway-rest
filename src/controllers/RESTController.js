@@ -158,7 +158,11 @@ class RESTController extends Controller
         let model = request.params.model;
 
         // I need to have permission to update this thing.
-        let test = currentUser.allowed([model.name,'update'], object);
+        // Pass the current object and the update request.
+        let test = currentUser.allowed([model.name,'update'], {
+            object: object,
+            update: request.body
+        });
 
         if (test.failed) {
             return response.api({message:test.localize(request)}, 403);
@@ -193,7 +197,8 @@ class RESTController extends Controller
         let model = request.params.model;
 
         // I need to have permission to create this thing.
-        let test = currentUser.allowed([model.name,'create']);
+        // Pass in the request body which should contain creation properties.
+        let test = currentUser.allowed([model.name,'create'], request.body);
 
         if (test.failed) {
             return response.api({message:test.localize(request)}, 403);

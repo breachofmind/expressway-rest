@@ -12,10 +12,11 @@ class APIExtension extends Extension
     {
         super(app);
 
+        this.alias   = "api";
         this.auth    = config('auth', false);
         this.package = require('../package.json');
         this.base    = "/api/v1";
-        this.title = "Expressway API v1";
+        this.title   = "Expressway API v1";
 
         app.use([
             require('expressway/src/providers/ModelProvider'),
@@ -24,20 +25,16 @@ class APIExtension extends Extension
             require('./controllers/RESTController'),
         ]);
 
-        this.middleware = [
+        this.routes.middleware([
             'Init',
             'APIRequest',
             'Localization',
             'BodyParser',
             'Session',
             'BasicAuth'
-        ];
+        ]);
 
-        /**
-         * API Routes.
-         * @type {[*]}
-         */
-        this.routes = [
+        this.routes.add([
             {
                 "GET    /"              : 'RESTController.index',
                 "GET    /locale"        : 'RESTController.locale',
@@ -47,16 +44,11 @@ class APIExtension extends Extension
                 "GET    /:model/:id"    : 'RESTController.fetchOne',
                 "PUT    /:model/:id"    : 'RESTController.update',
                 "DELETE /:model/:id"    : 'RESTController.trash',
-            },
-            'APINotFound'
-        ];
-    }
+            }
+        ]);
 
-    /**
-     * When service is created, this will also be created as a service.
-     * @returns {string}
-     */
-    get alias() { return "api" }
+        this.routes.error(404, 'APINotFound');
+    }
 
     /**
      * When all classes are constructed.
