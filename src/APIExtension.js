@@ -59,12 +59,8 @@ class APIExtension extends Extension
      */
     boot(next,app,url)
     {
-        app.alias('api', this.base);
-
         // Add a helper method for the URL service.
-        url.extend({
-            api(uri) { return this.get([app.alias('api')].concat(uri)) }
-        });
+        url.extend('api', this.base);
 
         // Attach the object API url to the json response.
         app.on('model.toJSON', (json,model,object) => {
