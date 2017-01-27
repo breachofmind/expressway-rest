@@ -39,6 +39,7 @@ class APIExtension extends Extension
                 "GET    /"              : 'RESTController.index',
                 "GET    /locale"        : 'RESTController.locale',
                 "GET    /:model"        : 'RESTController.fetchAll',
+                "POST   /auth"          : 'RESTController.auth',
                 "POST   /:model"        : 'RESTController.create',
                 "POST   /:model/search" : 'RESTController.search',
                 "GET    /:model/:id"    : 'RESTController.fetchOne',

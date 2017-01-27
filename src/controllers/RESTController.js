@@ -53,6 +53,47 @@ class RESTController extends Controller
     }
 
     /**
+     * Authenticate a user.
+     *
+     * POST /api/v1/auth
+     */
+    auth(request,response,next,auth,passport,log)
+    {
+        let redirectTo = request.query.forward || auth.successUri;
+        let credentials = request.body;
+
+        // If the user is already logged in, Log them out first.
+        if (request.user) {
+            log.warn('User logging out: %s', request.user.id);
+            request.logout();
+        }
+
+        if (! credentials.username || ! credentials.password || credentials.username == "" || credentials.password == "") {
+            return response.api(request.lang('auth.err_missingCredentials'), 400);
+        }
+
+        passport.authenticate('local', (err,user,info) =>
+        {
+            if (err) {
+                return response.api(err, 500);
+            } else if (! user) {
+                return response.api(request.lang(info.message), 403);
+            }
+
+            request.logIn(user, err =>
+            {
+                if (err) {
+                    return response.api(request.lang(info.message), 400);
+                }
+
+                // We are authenticated.
+                return response.api({user:user, redirect:redirectTo}, 200);
+            });
+
+        })(request,response,next);
+    }
+
+    /**
      * Fetch the localization keys.
      *
      * GET /api/v1/locale
