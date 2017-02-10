@@ -116,7 +116,7 @@ class RESTController extends Controller
      *
      * GET /api/v1/{model}/{id}
      */
-    fetchOne(request,response,next,Media)
+    fetchOne(request,response,next)
     {
         return response.api(request.params.object, 200, {
             model: request.params.model.name

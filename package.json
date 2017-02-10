@@ -24,6 +24,10 @@
     "url": "https://github.com/breachofmind/expressway-rest/issues"
   },
   "homepage": "https://github.com/breachofmind/expressway-rest#readme",
+  "peerDependencies": {
+    "expressway": "breachofmind/expressway",
+    "expressway-auth" : "breachofmind/expressway-auth"
+  },
   "dependencies": {
     "express": "^4.14.0"
   }

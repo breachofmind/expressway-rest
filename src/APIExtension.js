@@ -13,10 +13,10 @@ class APIExtension extends Extension
         super(app);
 
         this.alias   = "api";
-        this.auth    = config('auth', false);
+        this.auth    = config('api.auth', false);
+        this.base    = config('api.base',"/api/v1");
+        this.title   = config('api.name',"Expressway API v1");
         this.package = require('../package.json');
-        this.base    = "/api/v1";
-        this.title   = "Expressway API v1";
 
         app.use([
             require('expressway/src/providers/ModelProvider'),

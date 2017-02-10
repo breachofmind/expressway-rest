@@ -19,14 +19,15 @@ class APIModelRequest extends Middleware
             return response.api({message:"Model does not exist", slug:value}, 404);
         }
 
-        if (extension.auth && model.expose === false && ! currentUser) {
-            return response.api({message:`Unauthorized`}, 401);
-        }
-
-        // User needs at least read-level access on a model to continue.
-        let test = currentUser.allowed([model.name,'read']);
-        if (test.failed) {
-            return response.api({message:test.localize(request)}, 403);
+        if (extension.auth && model.expose === true) {
+             if (! currentUser) {
+                 return response.api({message:`Unauthorized`}, 401);
+             }
+            // User needs at least read-level access on a model to continue.
+            let test = currentUser.allowed([model.name,'read']);
+            if (test.failed) {
+                return response.api({message:test.localize(request)}, 403);
+            }
         }
 
         request.params.model = model;
