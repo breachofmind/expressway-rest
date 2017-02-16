@@ -1,7 +1,7 @@
 {
   "name": "expressway-rest",
-  "version": "0.0.1",
-  "description": "RESTful JSON api for Expressway",
+  "version": "0.1.0",
+  "description": "RESTful JSON API for Expressway",
   "main": "index.js",
   "scripts": {
     "test": "mocha test"
@@ -27,8 +27,5 @@
   "peerDependencies": {
     "expressway": "breachofmind/expressway",
     "expressway-auth" : "breachofmind/expressway-auth"
-  },
-  "dependencies": {
-    "express": "^4.14.0"
   }
 }
