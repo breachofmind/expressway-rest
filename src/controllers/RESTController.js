@@ -19,9 +19,11 @@ class RESTController extends Controller
             update:    ['APIAuth', 'APIModelRequest', 'APIModelById'],
             create:    ['APIAuth', 'APIModelRequest'],
             trash:     ['APIAuth', 'APIModelRequest', 'APIModelById'],
+            trashMany: ['APIAuth', 'APIModelRequest', 'APIModelsByIds'],
             fetchOne:  ['APIModelRequest', 'APIModelById'],
             fetchAll:  ['APIModelRequest','APIPaging'],
             search:    ['APIModelRequest','APIPaging', 'APIModelSearch'],
+
         });
     }
 
@@ -240,7 +242,6 @@ class RESTController extends Controller
         // I need to have permission to create this thing.
         // Pass in the request body which should contain creation properties.
         let test = currentUser.allowed([model.name,'create'], request.body);
-
         if (test.failed) {
             return response.api({message:test.localize(request)}, 403);
         }
@@ -268,7 +269,6 @@ class RESTController extends Controller
 
         // I need to have permission to delete this thing.
         let test = currentUser.allowed([model.name,'delete'], object);
-
         if (test.failed) {
             return response.api({message:test.localize(request)}, 403);
         }
@@ -285,6 +285,24 @@ class RESTController extends Controller
             return response.api(err,400);
 
         });
+    }
+
+    /**
+     * Deletes multiple objects given an array of IDs.
+     *
+     * DELETE /api/{model}
+     */
+    trashMany(request,response,next)
+    {
+        // The request
+        let object = request.params.object;
+        let model = request.params.model;
+
+        // I need to have permission to delete this thing.
+        let test = currentUser.allowed([model.name,'delete'], object);
+        if (test.failed) {
+            return response.api({message:test.localize(request)}, 403);
+        }
     }
 }
 
