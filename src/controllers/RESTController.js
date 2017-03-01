@@ -219,7 +219,7 @@ class RESTController extends Controller
             .exec()
             .then(function(data) {
 
-                return response.api(data,200);
+                return response.api(data,200,apiMessage(request, 'updated', model.singular));
 
             }, function(err){
 
@@ -247,7 +247,7 @@ class RESTController extends Controller
 
         return model.create(request.body).then(function(data)
         {
-            return response.api(data,200);
+            return response.api(data,200, apiMessage(request, 'created', model.singular));
 
         }, function(err) {
 
@@ -278,7 +278,7 @@ class RESTController extends Controller
                 results: results,
                 objectId : object[model.primaryKey]
             };
-            return response.api(data,200);
+            return response.api(data,200,apiMessage(request, 'deleted', model.singular));
 
         }, function(err) {
 
@@ -286,6 +286,18 @@ class RESTController extends Controller
 
         });
     }
+}
+
+/**
+ * Alias for creating a localized response message
+ * @param request
+ * @param key
+ * @param arg
+ * @returns {{message: *}}
+ */
+function apiMessage(request,key,arg)
+{
+    return {message: request.lang(`api.${key}`,arg) };
 }
 
 module.exports = RESTController;
