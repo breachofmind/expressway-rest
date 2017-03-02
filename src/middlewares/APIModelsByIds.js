@@ -21,7 +21,8 @@ class APIModelsByIds extends Middleware
         }};
 
         // Find the objects and attach them to the request.
-        model.find(query).then(result => {
+        model.find(query).populate(model.populate).then(result =>
+        {
             if (! result || ! result.length) {
                 return response.api({message:`No models found`, slug:model.slug, ids:ids }, 404);
             }

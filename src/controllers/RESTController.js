@@ -1,6 +1,8 @@
 "use strict";
 
-var Controller  = require('expressway').Controller;
+var expressway = require('expressway');
+var Controller = expressway.Controller;
+var Promise = expressway.Promise;
 
 class RESTController extends Controller
 {
@@ -149,7 +151,7 @@ class RESTController extends Controller
                 .exec();
 
             // After finding the count, find the records.
-            return promise.then(function(data) {
+            return promise.then(data => {
 
                 paging.setNext(data);
 
@@ -158,13 +160,13 @@ class RESTController extends Controller
                     model: model.name
                 });
 
-            }, function(err) {
+            }, err => {
 
                 // model.find() error
                 return response.api(err,400);
             });
 
-        }, function(err) {
+        }, err => {
 
             // model.count() error
             return response.api(err,400);
@@ -179,11 +181,11 @@ class RESTController extends Controller
      */
     search(request,response,next,app)
     {
-        return request.params.query.exec().then(function(data)
+        return request.params.query.exec().then(data =>
         {
             return response.api(data,200, {search:request.body});
 
-        }, function(err) {
+        }, err => {
 
             return response.api(err,400);
         });
@@ -219,11 +221,11 @@ class RESTController extends Controller
             .update(request.body, {new:true})
             .populate(model.populate)
             .exec()
-            .then(function(data) {
+            .then(data => {
 
                 return response.api(data,200,apiMessage(request, 'updated', model.singular));
 
-            }, function(err){
+            }, err => {
 
                 return response.api(err,400);
             });
@@ -246,11 +248,11 @@ class RESTController extends Controller
             return response.api({message:test.localize(request)}, 403);
         }
 
-        return model.create(request.body).then(function(data)
+        return model.create(request.body).then(data =>
         {
             return response.api(data,200, apiMessage(request, 'created', model.singular));
 
-        }, function(err) {
+        }, err => {
 
             return response.api(err,400);
 
@@ -273,14 +275,15 @@ class RESTController extends Controller
             return response.api({message:test.localize(request)}, 403);
         }
 
-        return model.delete({[model.primaryKey]: object[model.primaryKey]}).then(function(results) {
+        return model.delete({[model.primaryKey]: object[model.primaryKey]}).then(results =>
+        {
             let data = {
                 results: results,
                 objectId : object[model.primaryKey]
             };
             return response.api(data,200,apiMessage(request, 'deleted', model.singular));
 
-        }, function(err) {
+        }, err => {
 
             return response.api(err,400);
 
@@ -292,17 +295,59 @@ class RESTController extends Controller
      *
      * DELETE /api/{model}
      */
-    trashMany(request,response,next)
+    trashMany(request,response,next,currentUser)
     {
         // The request
-        let object = request.params.object;
+        let objects = request.params.objects;
         let model = request.params.model;
+        let json = {
+            requested: request.body.ids,
+            deleted: [],
+            errored: [],
+            errors: {},
+        };
 
-        // I need to have permission to delete this thing.
-        let test = currentUser.allowed([model.name,'delete'], object);
-        if (test.failed) {
-            return response.api({message:test.localize(request)}, 403);
-        }
+        let promises = objects.map(object =>
+        {
+            // I need to have permission to delete this thing.
+            let id = object[model.primaryKey];
+            let test = currentUser.allowed([model.name,'delete'], object);
+            if (test.failed) {
+                json.errored.push(id);
+                json.errors[id] = {status: 403, message: test.localize(request)};
+                return true;
+            }
+            return model.delete({[model.primaryKey]: id}).then(results =>
+            {
+                // Successfully deleted.
+                json.deleted.push(id);
+
+            }, err => {
+
+                json.errored.push(id);
+                json.errors[id] = {status:400, message:err.message}
+            });
+        });
+
+        return Promise.all(promises).then(result =>
+        {
+            let msgData = [json.deleted.length, json.errored.length, json.requested.length, model.plural];
+            let message = request.lang('api.deletionError', msgData);
+            let statusCode = 400;
+
+            if (json.requested.length === json.deleted.length) {
+                // The operation was a total success. High five.
+                message = request.lang('api.deletedMany', msgData);
+                statusCode = 200;
+
+            } else if (json.deleted.length > 0 && json.errored.length > 0) {
+                // The operation worked on some of them, but not all.
+                message = request.lang('api.deletedManyWithErrors', msgData);
+                statusCode = 200;
+            }
+
+            return response.api(json,statusCode,{message:message});
+        })
     }
 }
 
