@@ -1,6 +1,6 @@
 {
   "name": "expressway-rest",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "RESTful JSON API for Expressway",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,6 @@
   "homepage": "https://github.com/breachofmind/expressway-rest#readme",
   "peerDependencies": {
     "expressway": "breachofmind/expressway",
-    "expressway-auth" : "breachofmind/expressway-auth"
+    "expressway-auth": "breachofmind/expressway-auth"
   }
 }
