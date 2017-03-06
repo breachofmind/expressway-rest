@@ -42,7 +42,7 @@ class APIExtension extends Extension
 
         // Attach the object API url to the json response.
         app.on('model.toJSON', (json,model,object) => {
-            json.$url = url.api(`${model.slug}/${object.id}`);
+            json.$url = `/${model.slug}/${object.id}`;
         });
 
         super.boot(next);

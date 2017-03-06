@@ -247,6 +247,10 @@ class RESTController extends Controller
         if (test.failed) {
             return response.api({message:test.localize(request)}, 403);
         }
+        // If this object is managed, attached user id to the managed key.
+        if (model.managed) {
+            request.body[model.managed] = currentUser.id;
+        }
 
         return model.create(request.body).then(data =>
         {
